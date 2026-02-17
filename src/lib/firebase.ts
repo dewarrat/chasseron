@@ -29,6 +29,16 @@ async function getMessagingInstance() {
 
 export async function registerFcmToken(userId: string) {
   try {
+    if (!('serviceWorker' in navigator)) {
+      console.warn('Service workers not supported');
+      return;
+    }
+
+    if (!('Notification' in window)) {
+      console.warn('Notifications not supported');
+      return;
+    }
+
     const messaging = await getMessagingInstance();
     if (!messaging) {
       return;
@@ -45,9 +55,22 @@ export async function registerFcmToken(userId: string) {
       return;
     }
 
-    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    let registration = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
+
+    if (!registration) {
+      registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+        scope: '/'
+      });
+    }
+
     await navigator.serviceWorker.ready;
+
     const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration: registration });
+
+    if (!token) {
+      console.warn('No FCM token received');
+      return;
+    }
 
     const { error } = await supabase
       .from('fcm_tokens')
@@ -74,17 +97,32 @@ export async function unregisterCurrentToken() {
 }
 
 export function setupForegroundMessages(callback: (payload: { title: string; body: string }) => void) {
+  let unsubscribe: (() => void) | null = null;
+
   (async () => {
-    const messaging = await getMessagingInstance();
-    if (!messaging) {
-      return;
+    try {
+      const messaging = await getMessagingInstance();
+      if (!messaging) {
+        return;
+      }
+
+      unsubscribe = onMessage(messaging, (payload) => {
+        try {
+          const title = payload.notification?.title || 'Alpi';
+          const body = payload.notification?.body || '';
+          callback({ title, body });
+        } catch (err) {
+          console.error('Error handling foreground message:', err);
+        }
+      });
+    } catch (err) {
+      console.error('Error setting up foreground messages:', err);
     }
-    onMessage(messaging, (payload) => {
-      const title = payload.notification?.title || 'Alpi';
-      const body = payload.notification?.body || '';
-      callback({ title, body });
-    });
   })();
 
-  return () => {};
+  return () => {
+    if (unsubscribe) {
+      unsubscribe();
+    }
+  };
 }

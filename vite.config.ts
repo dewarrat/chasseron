@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { copyFileSync } from 'fs';
+import { copyFile } from 'fs/promises';
 import { resolve } from 'path';
 
 export default defineConfig({
@@ -8,11 +8,15 @@ export default defineConfig({
     react(),
     {
       name: 'copy-sw',
-      closeBundle() {
-        copyFileSync(
-          resolve(__dirname, 'public/firebase-messaging-sw.js'),
-          resolve(__dirname, 'dist/firebase-messaging-sw.js')
-        );
+      async closeBundle() {
+        try {
+          await copyFile(
+            resolve(__dirname, 'public/firebase-messaging-sw.js'),
+            resolve(__dirname, 'dist/firebase-messaging-sw.js')
+          );
+        } catch (err) {
+          console.error('Failed to copy service worker:', err);
+        }
       }
     }
   ],
