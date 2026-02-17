@@ -46,6 +46,7 @@ export async function registerFcmToken(userId: string) {
     }
 
     const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    await navigator.serviceWorker.ready;
     const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration: registration });
 
     const { error } = await supabase

@@ -17,7 +17,7 @@ export default function AppLayout() {
       .from('tickets')
       .select('*, project:projects(*)')
       .eq('assigned_to', user!.id)
-      .not('status', 'eq', 'done')
+      .not('status', 'eq', 'resolved')
       .order('updated_at', { ascending: false });
     setMyTickets(data ?? []);
   }, [user]);
@@ -44,7 +44,7 @@ export default function AppLayout() {
         .from('notifications')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user!.id)
-        .eq('read', false);
+        .eq('is_read', false);
       setUnreadCount(count ?? 0);
     }
 

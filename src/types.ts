@@ -4,11 +4,13 @@ export interface Profile {
   full_name: string;
   role: 'developer' | 'po' | 'admin';
   created_at: string;
+  is_active: boolean;
 }
 
 export interface Project {
-  id: number;
+  id: string;
   name: string;
+  slug: string;
   description: string;
   created_at: string;
   created_by: string;
@@ -18,9 +20,9 @@ export interface Ticket {
   id: number;
   title: string;
   description: string;
-  status: 'backlog' | 'todo' | 'in_progress' | 'testing' | 'blocked' | 'done';
-  priority: 'p0' | 'p1' | 'p2' | 'p3';
-  project_id: number;
+  status: 'open' | 'in_progress' | 'blocked' | 'testing' | 'resolved' | 'cancelled' | 'duplicate';
+  priority: 'p0_critical' | 'p1_high' | 'p2_medium' | 'p3_low';
+  project_id: string;
   project?: Project;
   assigned_to: string | null;
   assignee?: Profile | null;
@@ -28,7 +30,7 @@ export interface Ticket {
   creator?: Profile;
   created_at: string;
   updated_at: string;
-  deadline: string | null;
+  sla_deadline: string | null;
 }
 
 export interface Comment {
@@ -41,13 +43,13 @@ export interface Comment {
 }
 
 export interface Notification {
-  id: number;
+  id: string;
   user_id: string;
   message: string;
-  type: 'assignment' | 'comment' | 'status_change' | 'mention';
+  type: 'assigned' | 'unassigned' | 'status_changed' | 'commented' | 'cancellation_requested' | 'mentioned' | 'user_deactivation_requested';
   ticket_id: number | null;
   ticket?: Ticket;
-  read: boolean;
+  is_read: boolean;
   created_at: string;
 }
 
