@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage, deleteToken, isSupported } from 'firebase/messaging';
 import { supabase } from './supabase';
 
@@ -12,41 +12,61 @@ const firebaseConfig = {
   measurementId: "G-36Z5YQKXGZ"
 };
 
-const app = initializeApp(firebaseConfig);
-
+let firebaseApp: FirebaseApp | null = null;
 let messagingInstance: ReturnType<typeof getMessaging> | null = null;
+let firebaseEnabled = false;
+
+function initializeFirebase() {
+  try {
+    const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+    if (!vapidKey) {
+      return false;
+    }
+
+    if (!firebaseApp) {
+      firebaseApp = initializeApp(firebaseConfig);
+      firebaseEnabled = true;
+    }
+    return true;
+  } catch (error) {
+    firebaseEnabled = false;
+    return false;
+  }
+}
 
 async function getMessagingInstance() {
-  const supported = await isSupported();
-  if (!supported) {
+  try {
+    if (!firebaseEnabled && !initializeFirebase()) {
+      return null;
+    }
+
+    const supported = await isSupported();
+    if (!supported) {
+      return null;
+    }
+
+    if (!messagingInstance && firebaseApp) {
+      messagingInstance = getMessaging(firebaseApp);
+    }
+    return messagingInstance;
+  } catch (error) {
     return null;
   }
-  if (!messagingInstance) {
-    messagingInstance = getMessaging(app);
-  }
-  return messagingInstance;
 }
 
 export async function registerFcmToken(userId: string) {
   try {
-    if (!('serviceWorker' in navigator)) {
-      console.warn('Service workers not supported');
+    const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+    if (!vapidKey) {
       return;
     }
 
-    if (!('Notification' in window)) {
-      console.warn('Notifications not supported');
+    if (!('serviceWorker' in navigator) || !('Notification' in window)) {
       return;
     }
 
     const messaging = await getMessagingInstance();
     if (!messaging) {
-      return;
-    }
-
-    const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-    if (!vapidKey) {
-      console.warn('VITE_FIREBASE_VAPID_KEY not set. Push notifications will not work.');
       return;
     }
 
@@ -68,19 +88,15 @@ export async function registerFcmToken(userId: string) {
     const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration: registration });
 
     if (!token) {
-      console.warn('No FCM token received');
       return;
     }
 
-    const { error } = await supabase
+    await supabase
       .from('fcm_tokens')
       .upsert({ user_id: userId, token }, { onConflict: 'user_id,token' });
 
-    if (error) {
-      console.error('Failed to save FCM token:', error);
-    }
   } catch (error) {
-    console.error('FCM registration error:', error);
+    // Silently fail if Firebase is not configured or has permission issues
   }
 }
 
@@ -92,7 +108,7 @@ export async function unregisterCurrentToken() {
     }
     await deleteToken(messaging);
   } catch (error) {
-    console.error('FCM unregister error:', error);
+    // Silently fail
   }
 }
 
@@ -112,17 +128,21 @@ export function setupForegroundMessages(callback: (payload: { title: string; bod
           const body = payload.notification?.body || '';
           callback({ title, body });
         } catch (err) {
-          console.error('Error handling foreground message:', err);
+          // Silently fail
         }
       });
     } catch (err) {
-      console.error('Error setting up foreground messages:', err);
+      // Silently fail
     }
   })();
 
   return () => {
     if (unsubscribe) {
-      unsubscribe();
+      try {
+        unsubscribe();
+      } catch (err) {
+        // Silently fail
+      }
     }
   };
 }

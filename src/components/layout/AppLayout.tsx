@@ -35,25 +35,45 @@ export default function AppLayout() {
   useEffect(() => {
     if (!user) return;
 
-    // Delay FCM registration to avoid blocking page load
+    // Delay FCM registration significantly to avoid blocking page load
     const timer = setTimeout(() => {
-      registerFcmToken(user.id).catch((err) => {
-        console.error('FCM registration failed:', err);
+      registerFcmToken(user.id).catch(() => {
+        // Silently fail - Firebase may not be configured for this domain
       });
-    }, 1000);
+    }, 3000);
 
-    const cleanupMessages = setupForegroundMessages((payload) => {
-      if (Notification.permission === 'granted') {
-        new Notification(payload.title, {
-          body: payload.body,
-          icon: '/vite.svg',
+    let cleanupMessages: (() => void) | null = null;
+
+    // Delay foreground message setup as well
+    const messageTimer = setTimeout(() => {
+      try {
+        cleanupMessages = setupForegroundMessages((payload) => {
+          try {
+            if (Notification.permission === 'granted') {
+              new Notification(payload.title, {
+                body: payload.body,
+                icon: '/vite.svg',
+              });
+            }
+          } catch (err) {
+            // Silently fail
+          }
         });
+      } catch (err) {
+        // Silently fail
       }
-    });
+    }, 3000);
 
     return () => {
       clearTimeout(timer);
-      cleanupMessages();
+      clearTimeout(messageTimer);
+      if (cleanupMessages) {
+        try {
+          cleanupMessages();
+        } catch (err) {
+          // Silently fail
+        }
+      }
     };
   }, [user]);
 
