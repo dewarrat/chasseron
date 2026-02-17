@@ -1,6 +1,6 @@
 import { NavLink, useNavigate, Link } from 'react-router-dom';
 import {
-  Bug, LayoutDashboard, FolderKanban, Bell, LogOut, Menu, X, ChevronLeft, Users, CircleDot, AlertTriangle, Settings,
+  Bug, LayoutDashboard, FolderKanban, Bell, LogOut, Menu, X, ChevronLeft, Users, CircleDot, AlertTriangle, Settings, UserCog,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -33,6 +33,7 @@ export default function Sidebar({ unreadCount, myTickets }: SidebarProps) {
     { to: '/projects', icon: FolderKanban, label: 'Projects' },
     ...(canSeeTeam ? [{ to: '/team', icon: Users, label: 'Team' }] : []),
     { to: '/notifications', icon: Bell, label: 'Notifications' },
+    ...(isAdmin ? [{ to: '/admin/users', icon: UserCog, label: 'Users' }] : []),
     ...(isAdmin ? [{ to: '/settings', icon: Settings, label: 'Settings' }] : []),
   ];
 
@@ -42,7 +43,7 @@ export default function Sidebar({ unreadCount, myTickets }: SidebarProps) {
         <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center flex-shrink-0">
           <Bug className="w-5 h-5 text-white" />
         </div>
-        {!collapsed && <span className="text-lg font-bold text-slate-900">Alpi - Issue Tracking Workflow</span>}
+        {!collapsed && <span className="text-lg font-bold text-slate-900">BugFlow</span>}
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="ml-auto hidden lg:flex w-7 h-7 items-center justify-center rounded-md hover:bg-slate-100 text-slate-400 transition"

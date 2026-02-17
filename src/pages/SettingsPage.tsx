@@ -91,7 +91,7 @@ export default function SettingsPage() {
           <Shield className="w-6 h-6 text-teal-600" />
           <h1 className="text-2xl font-bold text-slate-900">Admin Settings</h1>
         </div>
-        <p className="text-sm text-slate-500 ml-9">Global configuration for your Alpi - Issue Tracking Workflow instance</p>
+        <p className="text-sm text-slate-500 ml-9">Global configuration for your BugFlow instance</p>
       </div>
 
       <form onSubmit={handleSave}>

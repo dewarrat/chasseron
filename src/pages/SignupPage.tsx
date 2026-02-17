@@ -38,7 +38,7 @@ export default function SignupPage() {
           <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center">
             <Bug className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Alpi - Issue Tracking Workflow</h1>
+          <h1 className="text-2xl font-bold text-slate-900">BugFlow</h1>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
@@ -59,7 +59,6 @@ export default function SignupPage() {
                 value={fullName}
                 onChange={e => setFullName(e.target.value)}
                 required
-                autoComplete="name"
                 className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
                 placeholder="Jane Doe"
               />
@@ -72,7 +71,6 @@ export default function SignupPage() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
-                autoComplete="email"
                 className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
                 placeholder="you@example.com"
               />
@@ -86,7 +84,6 @@ export default function SignupPage() {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
-                  autoComplete="new-password"
                   className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition pr-10"
                   placeholder="Min. 6 characters"
                 />
