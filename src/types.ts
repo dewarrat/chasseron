@@ -3,8 +3,12 @@ export interface Profile {
   email: string;
   full_name: string;
   role: 'developer' | 'po' | 'admin';
+  avatar_url: string | null;
   created_at: string;
   is_active: boolean;
+  deactivated_at: string | null;
+  deactivated_by: string | null;
+  email_notifications: boolean;
 }
 
 export interface Project {
@@ -14,6 +18,10 @@ export interface Project {
   description: string;
   created_at: string;
   created_by: string;
+  sla_p0_hours: number | null;
+  sla_p1_hours: number | null;
+  sla_p2_hours: number | null;
+  sla_p3_hours: number | null;
 }
 
 export interface Ticket {
@@ -31,6 +39,12 @@ export interface Ticket {
   created_at: string;
   updated_at: string;
   sla_deadline: string | null;
+  sort_order: number;
+  duplicate_of: number | null;
+  rejection_reason: string | null;
+  blocked_at: string | null;
+  sla_paused_duration: string;
+  report_link: string | null;
 }
 
 export interface Comment {
